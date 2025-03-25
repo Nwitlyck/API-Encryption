@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -32,12 +31,12 @@ public class EncryptionController {
                 TimeUnit.MILLISECONDS.sleep(100);
             }
 
-            response.setEncryp(futureResponse.get());
+            response.setText(futureResponse.get());
 
             errorResponse.setErrorMessage("Contraseña encriptada exitosamente");
             errorResponse.setErrorCode(0);
         } catch (Exception e) {
-            response.setEncryp("");
+            response.setText("");
             errorResponse.setErrorMessage("Error al encriptar texto");
             errorResponse.setErrorCode(-1);
         }
@@ -46,17 +45,26 @@ public class EncryptionController {
     }
 
     @GetMapping("/dencryp")
-    public String getDencryp(@RequestParam String s) {
+    public EncrypResponse getDencryp(@RequestParam String text) {
+        EncrypResponse response = new EncrypResponse();
+        ErrorResponse errorResponse = new ErrorResponse();
         try {
-            Future<String> futureResponse = aes.decrypt(s);
+            var futureResponse = aes.decrypt(text);
 
             while (!futureResponse.isDone()) {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.MILLISECONDS.sleep(100);
             }
-            return futureResponse.get();
 
+            response.setText(futureResponse.get());
+
+            errorResponse.setErrorMessage("Texto desencriptado exitosamente");
+            errorResponse.setErrorCode(0);
         } catch (Exception e) {
-            return "";
+            response.setText("");
+            errorResponse.setErrorMessage("Error al desencriptado texto");
+            errorResponse.setErrorCode(-1);
         }
+        response.setErrorResponse(errorResponse);
+        return response;
     }
 }
